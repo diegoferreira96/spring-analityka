@@ -1,11 +1,20 @@
 package br.com.backend.spring_analityka.main;
 
-import java.util.Scanner;
+import br.com.backend.spring_analityka.service.BrapiClient;
+import io.github.cdimascio.dotenv.Dotenv;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class Main {
     private final Scanner leitura = new Scanner(System.in);
+    private final Dotenv dotenv = Dotenv.load();
+//    private final String keyBrapiAPI = System.getenv("CHAVE_API_BRAPI");
+//    private final HgBrasilAPI consultaHgBrasilAAPI = new HgBrasilAPI();
+//    private final String urlBaseHgBrasilAPI = "https://api.hgbrasil.com/finance?";
+//    private static final String keyHgBrasilAPI = System.getenv("CHAVE_API_HGBRASIL");
+
 
     public void menu() {
         String menuPrincipal = """
@@ -64,13 +73,60 @@ public class Main {
             opcaoSub = lerOpcao();
 
             switch (opcaoSub) {
-                case 1 -> System.out.println("[Executando] Cotações em Tempo Real...");
-                case 2 -> System.out.println("[Executando] Termômetro de Mercado...");
-                case 3 -> System.out.println("[Executando] Watchlist Preview...");
+                case 1 -> {
+                    System.out.println("[Executando] Cotações em Tempo Real...");
+                    cotacoesTempoReal();
+                }
+                case 2 -> {
+                    System.out.println("[Executando] Termômetro de Mercado...");
+                    termometroMercado();
+                }
+                case 3 -> {
+                    System.out.println("[Executando] Watchlist Preview...");
+                    watchlistPreview();
+                }
                 case 0 -> System.out.println("Voltando...");
                 default -> System.out.println("Opção inválida.");
             }
         }
+    }
+
+    private void watchlistPreview() {
+
+    }
+
+    private void termometroMercado() {
+
+    }
+
+    private void cotacoesTempoReal(){
+        dadosIndice();
+    }
+
+    private void dadosIndice(){
+        try {
+            System.out.println("Digite o ticker do Índice: ");
+            var indice = leitura.next();
+            BrapiClient client = new BrapiClient(dotenv.get("CHAVE_API_BRAPI"));
+            BrapiClient.QuoteResponse response = client.getQuote(URLEncoder.encode(indice, StandardCharsets.UTF_8));
+
+            if (response.results != null && response.results.length > 0) {
+                BrapiClient.QuoteResponse.Quote quote = response.results[0];
+                System.out.println("Nome: " + quote.shortName);
+                System.out.printf("Cotação: %.2f%n", quote.regularMarketPrice);
+                System.out.printf("Alta do Dia: %.2f%n", quote.regularMarketDayHigh);
+                System.out.printf("Baixa do Dia: %.2f%n", quote.regularMarketDayLow);
+                System.out.printf("Variação: %.2f%n", quote.regularMarketChange);
+                System.out.printf("Variação Percentual: %.2f%%%n", quote.regularMarketChangePercent);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void cambio(){
+
     }
 
     private void menuModuloAcoes() {
